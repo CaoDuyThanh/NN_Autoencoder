@@ -15,6 +15,9 @@ def CrossEntropy(output, y):
     # return T.mean(T.sum(T.nnet.binary_crossentropy(output, y), 1))
     return -T.mean(T.log(output)[T.arange(y.shape[0]), y])
 
+""" Mean square error """
+def MSE(output, y):
+    return T.mean(T.sum(T.sqr(output - y), 1))
 
 """ Error """
 def Error(output, y):
