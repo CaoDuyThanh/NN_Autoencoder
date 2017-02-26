@@ -1,8 +1,8 @@
 import theano
 import numpy
-import pickle
 import cPickle
 import theano.tensor as T
+from theano.tensor.shared_randomstreams import RandomStreams
 
 class HiddenLayer:
     def __init__(self,
@@ -12,13 +12,16 @@ class HiddenLayer:
                  numOut,                # Number reurons out of layer
                  activation = T.tanh,   # Activation function
                  W = None,
-                 b = None
+                 b = None,
+                 corruption = None
                  ):
         # Set parameters
+        self.Rng = rng;
         self.Input = input
         self.NumIn = numIn
         self.NumOut = numOut
         self.Activation = activation
+        self.Corruption = corruption
 
         # Create shared parameters for hidden layer
         if W is None:
@@ -54,8 +57,17 @@ class HiddenLayer:
             """ Or simply set bias from parameter """
             self.b = b
 
+    def getCorruptedInput(self, input, corruptionLevel):
+        theano_rng = RandomStreams(self.Rng.randint(2 ** 30))
+        return theano_rng.binomial(size=input.shape, n=1,
+                                   p=1 - corruptionLevel,
+                                   dtype=theano.config.floatX) * input
+
     def Output(self):
-        output = T.dot(self.Input, self.W) + self.b
+        input = self.Input
+        if self.Corruption is not None:
+            self.Input = self.getCorruptedInput(self.Input, self.Corruption)
+        output = T.dot(input, self.W) + self.b
         if self.Activation is None:
             return output
         else:
