@@ -1,5 +1,7 @@
 import theano
 import numpy
+import pickle
+import cPickle
 import theano.tensor as T
 
 class HiddenLayer:
@@ -63,16 +65,11 @@ class HiddenLayer:
     Return transpose of weight matrix
     '''
     def WTranspose(self):
-        return self.W.dimshuffle(1, 0)
-        # return theano.shared(
-        #     numpy.asarray(
-        #         self.W.dimshuffle(1, 0)
-        #     ),
-        #     borrow = True
-        # )
-
-
+        return self.W.T
 
     def Params(self):
         return [self.W, self.b]
 
+    def LoadModel(self, file):
+        self.W.set_value(cPickle.load(file), borrow = True)
+        self.b.set_value(cPickle.load(file), borrow = True)
